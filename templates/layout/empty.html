@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ head.title }}</title>
+    {{{ head.meta_tags }}}
+    {{{ head.config }}}
+
+    <link href="/content/favicon.ico" rel="shortcut icon">
+    {{#block "head"}}{{/block}}
+    
+    {{~inject 'themeSettings' theme_settings}}
+</head>
+<body>
+    {{#block "page"}}{{/block}}
+    
+</body>
+</html>

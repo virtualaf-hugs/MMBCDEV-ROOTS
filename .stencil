@@ -1,0 +1,11 @@
+{
+  "normalStoreUrl": "https://bittle-lits.com",
+  "accessToken": "op3z9ivp0057ol9ts2e1oqvxxdb73wt",
+  "port": "3000",
+  "customLayouts": {
+    "brand": {},
+    "category": {},
+    "page": {},
+    "product": {}
+  }
+}
