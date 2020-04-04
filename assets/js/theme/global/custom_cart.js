@@ -373,12 +373,8 @@ export default class Custom_Cart {
     //                                  Bind Cart Events 
     /******************************************************************************************/
     bindCartEvents() {
+        const debounceTimeout = 400;
         let preVal;
-        window['$body']  = window.$('body');
-        window['$cartContent'] = window.$('[data-cart-content]');
-        window['$cartMessages'] = window.$('[data-cart-status]');
-        window['$cartTotals'] = window.$('[data-cart-totals]');
-        window['$overlay'] = window.$('[data-cart] .loadingOverlay');
         
         // cart update
         $('[data-cart-update]', $cartContent).on('click', event => {
@@ -480,15 +476,12 @@ export default class Custom_Cart {
 
     /******************************************************************/
     refreshContent(remove, exec) {    
-        var utils = stencilUtils;
-        window['$body'] = window.$('body');
+        const utils = stencilUtils;
+        const secureBaseUrl = location.origin;
         window['$cartContent'] = window.$('[data-cart-content]');
-        window['$cartMessages'] = window.$('[data-cart-status]');
-        window['$cartTotals'] = window.$('[data-cart-totals]');
-        
-        window['$overlay'] = window.$('[data-cart] .loadingOverlay')
-        const $cartItemsRows = $('[data-item-row]', $cartContent);
-        const $cartPageTitle = $('[data-cart-page-title]');
+        window['$overlay'] = window.$('[data-cart] .loadingOverlay');
+        window['$cartItemsRows'] = window.$('[data-item-row]', window.$cartContent);
+        window['$cartPageTitle'] = window.$('[data-cart-page-title]');
         var options = {
             template: {
                 content: 'cart/content',
@@ -497,8 +490,11 @@ export default class Custom_Cart {
                 statusMessages: 'cart/status-messages',
             },
         };
-        $overlay.show();
-
+        window.$overlay.show();
+        window['addCartQty'] = undefined;
+        if (location.pathname == '/cart.php') {
+            exec === false;
+        }
         // Remove last item from cart? Reload
         if (remove && $cartItemsRows.length === 1) {
             return window.location.reload();
@@ -511,13 +507,14 @@ export default class Custom_Cart {
             $cartContent.html(response.content);
             $cartTotals.html(response.totals);
             $cartMessages.html(response.statusMessages);
-            
-            
-            $cartItemsRows = $('[data-item-row]', $cartContent);
             $cartPageTitle.replaceWith(response.pageTitle);
             bindCartEvents();
-            $overlay.hide();
+            window.$overlay.hide();
+
+            const quantity = (exec === true ? setQtyFromMem() : setQtyFromCart());
+            $('body').trigger('cart-quantity-update', quantity);
         });
+
 
         function setQtyFromCart() {
             console.log('Quantity was set from cart content');
@@ -526,11 +523,29 @@ export default class Custom_Cart {
 
         function setQtyFromMem() {
             console.log('Quantity was set from the API or local storage');
-            return Number(localStorage.getItem('cart-quantity'));
+            if (location.pathname == '/cart.php') {
+                return setQtyFromCart();
+            } 
+            else {
+                let cartQtyPromise = new Promise((resolve, reject) => {
+                    let cartId = parseCookies().cart_id;
+                        utils.api.cart.getCartQuantity({
+                            baseUrl: secureBaseUrl,
+                            cartId
+                        }, (err, qty) => {
+                            if (err) {
+                                reject(err);
+                                return Number(localStorage.getItem('cart-quantity'));
+                            }
+                            resolve(qty);
+                        });
+                    });
+                    cartQtyPromise.then(qty => {                   
+                        return qty;
+                    });
+                }
         }
-
-        var quantity = (exec === true ? setQtyFromMem() : setQtyFromCart());
-        $('body').trigger('cart-quantity-update', quantity);
+        
     }
 
 
@@ -568,8 +583,8 @@ export default class Custom_Cart {
 
 
     execascade() {
-        var secureBaseUrl = location.origin;
-        var utils = stencilUtils;
+        const secureBaseUrl = location.origin;
+        const utils = stencilUtils;
         
         /* var cartCheck = fetch('/api/storefront/carts/', 
             {credentials: 'include'})
