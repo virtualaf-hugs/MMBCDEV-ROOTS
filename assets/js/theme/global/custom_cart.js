@@ -41,6 +41,7 @@ export default class Custom_Cart {
         window['refreshContent'] = this.refreshContent;
         window['execascade'] = this.execascade;
         window['lineItemTest'] = this.getTestData;
+        window['returnCartQty'] = this.returnCartQty;
     }
     getTestData() {
         return JSON.stringify({
@@ -113,33 +114,38 @@ export default class Custom_Cart {
     //                       STOREFRONT API ADD TO CART FUNCTION
     /******************************************************************************************/
     addCartITEMS(cartId, messageData, callback) {
-        getCart();
         var xhr = new XMLHttpRequest(),
             postURL = ((typeof cartId !== 'undefined' && cartId !== 'null') && cartId ?
                 '/api/storefront/carts/' + cartId + '/items' :
                 '/api/storefront/carts/');
         xhr.withCredentials = true;
 
-        function setBCookie() {
-            window['bc_cookie'] = parseCookies();
-        }
         xhr.addEventListener('readystatechange', function() {
-            if (this.readyState === this.DONE) {
-                let responseData = JSON.parse(this.response);
+            if (this.readyState === XMLHttpRequest.DONE) {
                 let cartQty = 0;
-                Object.entries(responseData.lineItems).forEach(([key, value]) => {
-                    console.log('calculating quantity for: ' + key);
-                    cartQty += getCartQty(value);
+                return Promise.resolve(JSON.parse(this.response))
+                .then((data) => 
+                {
+                    let lineItems = data.lineItems;
+                    return Promise.resolve(lineItems)
+                })
+                .then((data) => 
+                {
+                    Promise.resolve(Object.entries(data).forEach(([key, value]) => {
+                        console.log('calculating quantity for: ' + key);
+                        cartQty += getCartQty(value);
+                    })).then(() => {
+                        window['addCartQty'] = cartQty;
+                        console.log('Calculated Cart Quantity = ' + cartQty);
+                        return Promise.resolve(true);
+                    }).then((data) => {
+                        if (data === true) {
+                            (typeof cartId == 'undefined' || !cartId || (String(cartId).length < 36)) ?
+                            (getCart(), callback()) : callback();
+                        }
+                    });
                 });
-                window['addCartQty'] = cartQty;
-                console.log('Calculated Cart Quantity = ' + cartQty);
-                document.cookie = 'cart_id=' + String(responseData.id);
-                (typeof cartId == 'undefined' || !cartId || String(cartId).length < 36) ?
-                (setBCookie(), callback()) : callback();
             }
-            // if (xhr.readyState === 4) {
-            //     callback();
-            // }
         });
         xhr.open('POST', postURL);
         xhr.setRequestHeader('content-type', 'application/json');
@@ -155,9 +161,15 @@ export default class Custom_Cart {
     //                                GET CART USING AJAX
     /******************************************************************************************/
 
-    getCart(callback) {
-
-        typeof cartObjectData === 'undefined' ? window.cartObjectData = {} : null;
+    getCart() {
+        let cartCheck;
+        function setCookie(cname, cvalue, exdays) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = 'expires=' + d.toUTCString();
+            document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
+        }
+        typeof cartObjectData === 'undefined' || (cartObjectData ? cartObjectData.length == 0 : false) ? window.cartObjectData = {} : null;
         typeof AJAXSettings === 'undefined' ? window.AJAXSettings = {} : null;
         cartObjectData, AJAXSettings = {
             'async': true,
@@ -166,18 +178,25 @@ export default class Custom_Cart {
             'method': 'GET',
             'headers': {}
         };
-        $.ajax(AJAXSettings).then(function(responseText) {
-            cartObjectData = JSON.parse(JSON.stringify(responseText, null, 3));
-            return Promise.resolve(cartObjectData);
-        }).done(function(data) {
-            window['bc_cookie'] = parseCookies();
-            if(cartObjectData.length === 0) {
-                return callback(false); 
-            } else {
-                document.cookie='cart_id=' + String(cartObjectData[0].id);
-                return Promise.resolve(callback(cartObjectData[0].cartAmount > 0));
-            }
-        });
+        return Promise.resolve($.ajax(AJAXSettings).then(function(responseText) {
+            Promise.resolve(JSON.stringify(responseText, null, 3))
+            .then((data) => {
+                cartObjectData = JSON.parse(data);
+                return Promise.resolve(cartObjectData)
+                .then((parsedData)=>{
+                    if(parsedData.length === 0) {
+                        setCookie('cart_id','',-1);
+                        window['bc_cookie'] = parseCookies();
+                        cartCheck = false;
+                    } else {
+                        setCookie('cart_id', String(parsedData[0].id));
+                        window['bc_cookie'] = parseCookies();
+                        cartCheck = true;
+                    }   
+                });
+                
+            });
+        })).then(()=>{return cartCheck});
     }
 
     /******************************************************************************************/
@@ -373,7 +392,6 @@ export default class Custom_Cart {
     //                                  Bind Cart Events 
     /******************************************************************************************/
     bindCartEvents() {
-        const debounceTimeout = 400;
         let preVal;
         
         // cart update
@@ -412,6 +430,8 @@ export default class Custom_Cart {
             });
             event.preventDefault();
         });
+
+        console.log('Cart Events Bound');
     }
 
     /******************************************************************************************/
@@ -458,7 +478,7 @@ export default class Custom_Cart {
                 return Promise.resolve(JSON.parse(getLineItems(cartObjectData)));
             }).done(function(data) {
                 window.lineItems = data.lineItems;
-                $('.cart-quantity').html(getCartQty(lineItems));
+                $('.cart-quantity').html(returnCartQty());
                 console.log({
                     lineItems
                 });
@@ -475,9 +495,9 @@ export default class Custom_Cart {
         Refresh Cart Content Dynamically Via Storefront API
 
     /******************************************************************/
-    refreshContent(remove, exec) {    
+    refreshContent(remove, cartQTY) {    
         const utils = stencilUtils;
-        const secureBaseUrl = location.origin;
+        window['addCartQty'] = 0;
         window['$cartContent'] = window.$('[data-cart-content]');
         window['$overlay'] = window.$('[data-cart] .loadingOverlay');
         window['$cartItemsRows'] = window.$('[data-item-row]', window.$cartContent);
@@ -491,10 +511,7 @@ export default class Custom_Cart {
             },
         };
         window.$overlay.show();
-        window['addCartQty'] = undefined;
-        if (location.pathname == '/cart.php') {
-            exec === false;
-        }
+        
         // Remove last item from cart? Reload
         if (remove && $cartItemsRows.length === 1) {
             return window.location.reload();
@@ -504,50 +521,68 @@ export default class Custom_Cart {
         }
 
         utils.api.getPage('/cart.php', options, (err, response) => {
-            $cartContent.html(response.content);
-            $cartTotals.html(response.totals);
-            $cartMessages.html(response.statusMessages);
-            $cartPageTitle.replaceWith(response.pageTitle);
-            bindCartEvents();
-            window.$overlay.hide();
-
-            const quantity = (exec === true ? setQtyFromMem() : setQtyFromCart());
-            $('body').trigger('cart-quantity-update', quantity);
+            if (err) {
+                console.log('There was an error loading the cart content via storefront API');
+            }
+            Promise.all([response.content,response.totals,response.statusMessages,response.pageTitle])
+            .then((values)=> {
+                $cartContent.html(values[0]);
+                $cartTotals.html(values[1]);
+                $cartMessages.html(values[2]);
+                $cartPageTitle.replaceWith(values[3]);
+                return Promise.resolve(true);
+              })
+            .then((response)=>{
+            return Promise.resolve(response ? (bindCartEvents(),window.$overlay.hide(), true) : (console.log('fail at response1'), false));
+            })
+            .then((response2)=>{
+                return Promise.resolve(response2 ? (cartQTY ? cartQTY : returnCartQty()) : (console.log('fail at response2'), false));     
+            })
+            .then((response3)=> {
+                const qty = response3;
+                $('body').trigger('cart-quantity-update', qty);
+                console.log('Cart Content Refresh Success');
+            });
         });
+        return 'Cart Content Refresh Initialized';
+    }
 
+     /****************************************************************
 
-        function setQtyFromCart() {
+        Return Cart Quantity Using API or Local Storage
+
+    /******************************************************************/   
+    returnCartQty() {
+        const utils = stencilUtils;
+        const secureBaseUrl = location.origin;
+        function  setQtyFromCart() {
+            window['$cartContent'] = window.$('[data-cart-content]');
             console.log('Quantity was set from cart content');
             return $('[data-cart-quantity]', $cartContent).data('cartQuantity') || 0;
         }
-
-        function setQtyFromMem() {
+        if (location.pathname == '/cart.php') {
+            return setQtyFromCart();
+        } 
+        else {
             console.log('Quantity was set from the API or local storage');
-            if (location.pathname == '/cart.php') {
-                return setQtyFromCart();
-            } 
-            else {
-                let cartQtyPromise = new Promise((resolve, reject) => {
-                    let cartId = parseCookies().cart_id;
-                        utils.api.cart.getCartQuantity({
-                            baseUrl: secureBaseUrl,
-                            cartId
-                        }, (err, qty) => {
-                            if (err) {
-                                reject(err);
-                                return Number(localStorage.getItem('cart-quantity'));
-                            }
-                            resolve(qty);
-                        });
+            let cartQtyPromise = new Promise((resolve, reject) => {
+                let cartId = parseCookies().cart_id;
+                    utils.api.cart.getCartQuantity({
+                        baseUrl: secureBaseUrl,
+                        cartId
+                    }, (err, qty) => {
+                        if (err) {
+                            reject(err);
+                            return Number(localStorage.getItem('cart-quantity'));
+                        }
+                        resolve(qty);
                     });
-                    cartQtyPromise.then(qty => {                   
-                        return qty;
-                    });
-                }
-        }
-        
+                });
+                cartQtyPromise.then(qty => {                   
+                    return qty;
+                });
+            }
     }
-
 
     /******************************************************************************************/
     //                                  EXECASCADE 
@@ -578,7 +613,9 @@ export default class Custom_Cart {
         }]
     });    
 
-    addCartITEMS(bc_cookie.cart_id, lineItems,execascade)
+    Promise.resolve(getCart()).then(()=> {
+        return Promise.resolve(addCartITEMS(getCartID(true),lineItemTest(),execascade));
+    });
     /******************************************************************************************/
 
 
@@ -596,8 +633,8 @@ export default class Custom_Cart {
         if (typeof addCartQty !== 'undefined' && (addCartQty > 0)) {
             let remove = (addCartQty === 0);
             $('.cart-quantity').text(addCartQty).toggleClass('countPill--positive', addCartQty > 0);
-            localStorage.setItem('cart-quantity', addCartQty);
-            return refreshContent(remove, true);
+            localStorage.setItem('cart-quantity', Number(addCartQty));
+            return refreshContent(remove, Number(addCartQty));
         } else if (bc_cookie.cart_id) {
             // Get existing quantity from localStorage if found
             if (utils.tools.storage.localStorageAvailable()) {
@@ -623,7 +660,7 @@ export default class Custom_Cart {
                 window.cartQty = qty;
                 $('.cart-quantity').text(qty).toggleClass('countPill--positive', qty > 0);
                 localStorage.setItem('cart-quantity', qty);
-                return refreshContent(remove, true);
+                return refreshContent(remove, qty);
             });
         } else {
             console.log('There was a problem loading the cart before refresh content');
