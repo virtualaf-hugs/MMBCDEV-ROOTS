@@ -7,10 +7,10 @@
         {{{ head.config }}}
         {{#block "head"}} {{/block}}
 
-        <link href="/content/favicon.ico" rel="shortcut icon">
+        <link href="{{ head.favicon }}" rel="shortcut icon">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-        
-        <script>    
+
+        <script>
             {{!-- Change document class from no-js to js so we can detect this in css --}}
             document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
         </script>
@@ -20,25 +20,22 @@
             window.lazySizesConfig = window.lazySizesConfig || {};
             window.lazySizesConfig.loadMode = 1;
         </script>
-        <script  src="/content/jquery.min.js"></script>
-        <script src="/content/sweetalert2.all.min.js"></script>
         <script async src="{{cdn 'assets/dist/theme-bundle.head_async.js'}}"></script>
-
-
 
         {{ getFontsCollection }}
         {{{stylesheet '/assets/css/theme.css'}}}
-        
+
         {{{head.scripts}}}
 
         {{~inject 'themeSettings' theme_settings}}
         {{~inject 'genericError' (lang 'common.generic_error')}}
-        {{~inject 'maintenanceMode' settings.maintenance}}
+        {{~inject 'maintenanceModeSettings' settings.maintenance}}
+        {{~inject 'adminBarLanguage' (langJson 'admin')}}
         {{~inject 'urls' urls}}
         {{~inject 'secureBaseUrl' settings.secure_base_url}}
         {{~inject 'cartId' cart_id}}
+        {{~inject 'channelId' settings.channel_id}}
         {{~inject 'template' template}}
-
         
         {{#if page_type '===' 'product'}}
             {{> components/common/facebook-like}}
@@ -54,42 +51,20 @@
                 linksPerCol: {{theme_settings.nav-links-per-col}},
             };
         </script>
+    </head>
+    <body>
+        <svg data-src="{{cdn 'img/icon-sprite.svg'}}" class="icons-svg-sprite"></svg>
+
+        {{> components/common/header }}
+        {{> components/common/body }}
+        {{> components/common/footer }}
+
         <script>window.__webpack_public_path__ = "{{cdn 'assets/dist/'}}";</script>
         <script src="{{cdn 'assets/dist/theme-bundle.main.js'}}"></script>
         <script>
             {{!-- Exported in app.js --}}
             window.stencilBootstrap("{{page_type}}", {{jsContext}}).load();
         </script>
-        <script>
-            window.addEventListener('load', function () {
-                setTimeout(() => {
-                    window.customCookie.init();
-                    window.customCart.init();
-                    
-                    if('{{cart_id}}' && Number(localStorage['cart-quantity'] > 0)) {
-                    document.cookie = 'cart_id={{cart_id}}';
-                    } else {
-                        setTimeout(() => {
-                            typeof parseCookies !== 'undefined' ? 
-                            window['bc_cookie'] = parseCookies() :
-                            console.log('there was an issue loading the cookie parser');
-                        }, 1000);
-                    }
-                }, 1000);
-            }, false);
-        </script>
-    </head>
-    <body>
-        <svg data-src="{{cdn 'img/icon-sprite.svg'}}" class="icons-svg-sprite"></svg>
-
-        {{~#and settings.privacy_cookie settings.is_eu_ip_address}}
-            {{> components/common/cookie}}
-        {{/and}}
-
-        {{> components/common/header }}
-        {{> components/common/body }}
-        {{> components/common/footer }}
-
 
         {{{footer.scripts}}}
     </body>

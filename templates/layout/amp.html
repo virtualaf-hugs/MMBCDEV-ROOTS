@@ -9,7 +9,7 @@
         {{{ head.meta_tags }}}
         {{{ head.config }}}
         {{#block "head"}} {{/block}}
-        <link href="/content/favicon.ico" rel="shortcut icon">
+        <link href="{{ head.favicon }}" rel="shortcut icon">
         <link href="https://fonts.googleapis.com/css?family=Karla:400|Montserrat:400" rel="stylesheet">
         {{#block "amp-style"}} {{/block}}
         {{inject 'themeSettings' theme_settings}}

@@ -14,6 +14,7 @@ product_results:
 {{/partial}}
 
 {{#partial "page"}}
+
 <div class="container">
     {{> components/common/breadcrumbs breadcrumbs=breadcrumbs}}
     <section class="nav">
@@ -144,9 +145,14 @@ product_results:
         
                 {{/if}}
         
+                <div id="search-results-content" {{#if forms.search.section '!=' 'content'}}class="u-hiddenVisually"{{/if}}>
+                    {{> components/search/content-listing}}
+                </div>
+        
                 <div id="product-listing-container" {{#if forms.search.section '!=' 'product'}}class="u-hiddenVisually"{{/if}}>
                     {{> components/search/product-listing}}
                 </div>
+
                 {{{region name="search_below_content"}}}
             </main>
         </div>

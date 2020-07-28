@@ -208,58 +208,58 @@ export default class Cart extends PageManager {
         });
     }
 
-bindCartEvents() {
-    const debounceTimeout = 400;
-    const cartUpdate = _.bind(_.debounce(this.cartUpdate, debounceTimeout), this);
-    const cartUpdateQtyTextChange = _.bind(_.debounce(this.cartUpdateQtyTextChange, debounceTimeout), this);
-    const cartRemoveItem = _.bind(_.debounce(this.cartRemoveItem, debounceTimeout), this);
-    let preVal;
+    bindCartEvents() {
+        const debounceTimeout = 400;
+        const cartUpdate = _.bind(_.debounce(this.cartUpdate, debounceTimeout), this);
+        const cartUpdateQtyTextChange = _.bind(_.debounce(this.cartUpdateQtyTextChange, debounceTimeout), this);
+        const cartRemoveItem = _.bind(_.debounce(this.cartRemoveItem, debounceTimeout), this);
+        let preVal;
 
-    // cart update
-    $('[data-cart-update]', this.$cartContent).on('click', event => {
-        const $target = $(event.currentTarget);
+        // cart update
+        $('[data-cart-update]', this.$cartContent).on('click', event => {
+            const $target = $(event.currentTarget);
 
-        event.preventDefault();
+            event.preventDefault();
 
-        // update cart quantity
-        cartUpdate($target);
-    });
-
-    // cart qty manually updates
-    $('.cart-item-qty-input', this.$cartContent).on('focus', function onQtyFocus() {
-        preVal = this.value;
-    }).change(event => {
-        const $target = $(event.currentTarget);
-        event.preventDefault();
-
-        // update cart quantity
-        cartUpdateQtyTextChange($target, preVal);
-    });
-
-    $('.cart-remove', this.$cartContent).on('click', event => {
-        const itemId = $(event.currentTarget).data('cartItemid');
-        const string = $(event.currentTarget).data('confirmDelete');
-        swal.fire({
-            text: string,
-            icon: 'warning',
-            showCancelButton: true,
-        }).then((result) => {
-            if (result.value) {
-                // remove item from cart
-                cartRemoveItem(itemId);
-            }
+            // update cart quantity
+            cartUpdate($target);
         });
-        event.preventDefault();
-    });
 
-    $('[data-item-edit]', this.$cartContent).on('click', event => {
-        const itemId = $(event.currentTarget).data('itemEdit');
+        // cart qty manually updates
+        $('.cart-item-qty-input', this.$cartContent).on('focus', function onQtyFocus() {
+            preVal = this.value;
+        }).change(event => {
+            const $target = $(event.currentTarget);
+            event.preventDefault();
 
-        event.preventDefault();
-        // edit item in cart
-        this.cartEditOptions(itemId);
-    });
-}
+            // update cart quantity
+            cartUpdateQtyTextChange($target, preVal);
+        });
+
+        $('.cart-remove', this.$cartContent).on('click', event => {
+            const itemId = $(event.currentTarget).data('cartItemid');
+            const string = $(event.currentTarget).data('confirmDelete');
+            swal.fire({
+                text: string,
+                icon: 'warning',
+                showCancelButton: true,
+            }).then((result) => {
+                if (result.value) {
+                    // remove item from cart
+                    cartRemoveItem(itemId);
+                }
+            });
+            event.preventDefault();
+        });
+
+        $('[data-item-edit]', this.$cartContent).on('click', event => {
+            const itemId = $(event.currentTarget).data('itemEdit');
+
+            event.preventDefault();
+            // edit item in cart
+            this.cartEditOptions(itemId);
+        });
+    }
 
     bindPromoCodeEvents() {
         const $couponContainer = $('.coupon-code');

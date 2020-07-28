@@ -5,13 +5,17 @@
     {{{ head.meta_tags }}}
     {{{ head.config }}}
 
-    <link href="/content/favicon.ico" rel="shortcut icon">
+    <link href="{{ head.favicon }}" rel="shortcut icon">
     {{#block "head"}}{{/block}}
     
-    {{~inject 'themeSettings' theme_settings}}
+    {{inject 'themeSettings' theme_settings}}
 </head>
 <body>
     {{#block "page"}}{{/block}}
-    
+
+    <script>
+        // Exported in app.js
+        window.stencilBootstrap("{{page_type}}", {{jsContext}}).load();
+    </script>
 </body>
 </html>

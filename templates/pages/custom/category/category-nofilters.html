@@ -26,7 +26,10 @@ category:
             {{#if category.image}}
                 <img class="lazyload" data-sizes="auto" src="{{cdn 'img/loading.svg'}}" data-src="{{getImage category.image 'zoom_size'}}">
             {{/if}}
-            <h1 class="page-heading">{{category.name}}</h1>
+            {{#unless theme_settings.hide_category_page_heading }}
+                <h1 class="page-heading">{{category.name}}</h1>
+            {{/unless}}
+            {{{region name="category_below_header"}}}
             {{{category.description}}}
             {{{snippet 'categories'}}}
             
@@ -58,7 +61,7 @@ category:
         
         <div class="grid-bg">
             <div class="container">
-                {{#or category.subcategories category.faceted_search_enabled category.shop_by_price}}
+                {{#or theme_settings.subcategories_left_column theme_settings.shop_by_price_visibility}}
                     <aside class="page-sidebar" id="faceted-search-container">
                         {{> components/category/sidebar}}
                     </aside>
@@ -71,6 +74,7 @@ category:
                             <p>{{lang 'categories.no_products'}}</p>
                         </div>
                     {{/if}}
+                    {{{region name="category_below_content"}}}
                 </main>
             </div>
         </div>

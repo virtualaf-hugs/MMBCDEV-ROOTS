@@ -8,6 +8,7 @@
                 <p data-cart-quantity="{{cart.quantity}}">
                     {{lang 'cart.added_to_cart.your_cart_contains' num_products=cart.quantity}}.
                     {{lang 'cart.added_to_cart.order_subtotal'}}
+
                     <strong>
                         {{#or customer (if theme_settings.restrict_to_login '!==' true)}}
                             {{cart.sub_total.formatted}}
@@ -79,7 +80,7 @@
                                 {{name}}
                             </dt>
                             <dd class="productView-info-value">
-                                {{value}}
+                                {{{ sanitize value}}}
                             </dd>
                         </dl>
                     {{/each}}

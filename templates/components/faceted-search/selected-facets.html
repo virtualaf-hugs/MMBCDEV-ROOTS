@@ -16,7 +16,7 @@
                         {{#if facet '===' 'rating'}}
                             {{lang 'search.faceted.selected.rating-label' rating=title}}
                         {{else}}
-                            {{ title }}
+                            {{{ sanitize title }}}
                         {{/if}}
     
                         <svg class="icon">

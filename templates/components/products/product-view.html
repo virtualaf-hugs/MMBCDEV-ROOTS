@@ -221,35 +221,33 @@
                     {{/if}}
                 </div>
                 
-                {{#any product.shipping product.gift_wrapping_available product.stock_level}}
-                    <div class="shipping-giftWrap-stock">
-                        {{#if product.shipping}}
-                            {{#unless product.shipping.calculated}}
-                                {{#if product.shipping.price.value '===' 0}}
-                                    <div class="productView-shipping productView-shipping--free">
-                                        <dt class="productView-info-name hide-label">{{lang 'products.shipping'}}</dt>
-                                        <dd class="productView-info-value uppercase"><strong>{{lang 'products.shipping_free'}}</strong></dd>
-                                    </div>
-                                {{else}}
-                                    <div class="productView-shipping">
-                                        <dt class="productView-info-name">Fixed Shipping Cost: </dt>
-                                        <dd class="productView-info-value">{{product.shipping.price.formatted}}</dd>
-                                    </div>
-                                {{/if}}
-                            {{/unless}}
-                        {{/if}}
-                        {{#if product.gift_wrapping_available}}
-                            <div class="productView-giftWrap">
-                                <dt class="productView-info-name">{{lang 'products.gift_wrapping'}}</dt>
-                                <dd class="productView-info-value">{{lang 'products.gift_wrapping_available'}}</dd>
-                            </div>
-                        {{/if}}
-                        <div class="form-field--stock{{#unless product.stock_level}} u-hiddenVisually{{/unless}}">
-                            <dt class="productView-info-name">{{lang 'products.current_stock'}}</dt>
-                            <dd class="productView-info-value"><span data-product-stock>{{product.stock_level}}</span></dd>
+                <div class="shipping-giftWrap-stock">
+                    {{#if product.shipping}}
+                        {{#unless product.shipping.calculated}}
+                            {{#if product.shipping.price.value '===' 0}}
+                                <div class="productView-shipping productView-shipping--free">
+                                    <dt class="productView-info-name hide-label">{{lang 'products.shipping'}}</dt>
+                                    <dd class="productView-info-value uppercase"><strong>{{lang 'products.shipping_free'}}</strong></dd>
+                                </div>
+                            {{else}}
+                                <div class="productView-shipping">
+                                    <dt class="productView-info-name">Fixed Shipping Cost: </dt>
+                                    <dd class="productView-info-value">{{product.shipping.price.formatted}}</dd>
+                                </div>
+                            {{/if}}
+                        {{/unless}}
+                    {{/if}}
+                    {{#if product.gift_wrapping_available}}
+                        <div class="productView-giftWrap">
+                            <dt class="productView-info-name">{{lang 'products.gift_wrapping'}}</dt>
+                            <dd class="productView-info-value">{{lang 'products.gift_wrapping_available'}}</dd>
                         </div>
+                    {{/if}}
+                    <div class="form-field--stock{{#unless product.stock_level}} u-hiddenVisually{{/unless}}">
+                        <dt class="productView-info-name">{{lang 'products.current_stock'}}</dt>
+                        <dd class="productView-info-value"><span data-product-stock>{{product.stock_level}}</span></dd>
                     </div>
-                {{/any}}
+                </div>
                 
                 {{#if product.can_purchase}}
                     {{> components/products/add-to-cart}}

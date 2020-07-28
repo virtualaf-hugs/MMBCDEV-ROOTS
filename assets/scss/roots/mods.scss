@@ -11,6 +11,7 @@ $logo_fontSize_mobile: stencilNumber("logo_fontSize_mobile");
 
 // colours
 $button--primary-backgroundColor: stencilColor("button--primary-backgroundColor");
+$button--primary-color: stencilColor("button--primary-color");
 $button--secondary-backgroundColor: stencilColor("button--default-backgroundColor");
 $button--secondary-text: stencilColor("button--default-color");
 $button--secondary-text-hover: stencilColor("button--default-colorHover");
@@ -155,6 +156,11 @@ a{text-decoration: none;}
 
 .socialLinks .icon svg{fill: $general-linkColor;}
 .socialLinks .icon:hover svg{fill: $general-linkColorHover;}
+
+.navList-section:after,
+.navList-section:before,
+.navList:after,
+.navList:before{display: none;}
 
 // slick slider
 .slick-prev,
@@ -625,7 +631,10 @@ footer .socialLinks{
     
 .header-logo h1{margin: 0;}
 .header-logo h1 a,
-.header-logo > a{padding: 0;}
+.header-logo > a{
+    padding: 0;
+    width: 100%;
+}
 
 .header-logo-image{margin: 0;}
 
@@ -1110,12 +1119,12 @@ footer a:hover{
     margin-bottom: 40px;
 }
 .page-sidebar .toggleLink{
-    color: $button--secondary-text;
+    color: $general-linkColor;
 }
 .page-sidebar .toggleLink:hover,
 .page-sidebar .toggleLink:active
 {
-    color: $button--secondary-text-hover;
+    color: $general-linkColorHover;
 }
 
 .page-sidebar .accordion-indicator{
@@ -1230,6 +1239,7 @@ li.pagination-item--previous a{
 }
 
 // PRODUCT PAGE
+.productView{overflow: hidden;}
 .productView-thumbnails:not(.slick-slider){
     display: flex;
     justify-content: center;
@@ -1389,7 +1399,7 @@ li.pagination-item--previous a{
     margin-bottom: 20px;
 }
 
-.shipping-giftWrap-stock{
+.shipping-giftWrap-stock > div:last-child{
     border-bottom: 1px solid $card-image-border;
     margin-bottom: 20px;
     padding-bottom: 20px;
@@ -1854,14 +1864,16 @@ li.pagination-item--previous a{
         flex-flow: row wrap;
     }
     .productView-images{
-        flex: 0 1 $pdp-image-width;
+        flex: 0 1 calc(#{$pdp-image-width} - 2rem);
         max-width: 60%;
-        width: $pdp-image-width;
+        width: calc(#{$pdp-image-width} - 2rem);
     }
     
     .productView-image + .productView-thumbnails{
         margin-left: 0;
         margin-right: 0;
+        width: calc(#{$pdp-image-width} - 2rem);
+        max-width: 100%;
     }
 
     .productView-details{
@@ -2100,7 +2112,7 @@ li.pagination-item--previous a{
     }
     
     .navPages-item--currency .navPage-subMenu{
-        background: #fff;
+        background: $nav-backgroundColor;
         position: absolute;
         right: 0;
         z-index: 1;
@@ -2359,10 +2371,13 @@ li.pagination-item--previous a{
     }
 
     // category page
+    .page-sidebar .toggleLink{
+        color: $button--primary-color;
+    }
     .page-sidebar{padding: 0;}
     .sidebar-nav-mobile{
         display: flex;
-        flex-flow: row nowrap;
+        flex-flow: row wrap;
         list-style: none;
         margin: 0;
         position: relative;
@@ -2392,6 +2407,11 @@ li.pagination-item--previous a{
         z-index: 5;
     }
     
+    .sidebar-nav-mobile > a:nth-child(3){
+        margin-top: 12px;
+        flex: 1 1 100%;
+    }
+    
     .sidebarBlock + .sidebarBlock{
         border: 0;
         margin: 0;
@@ -2405,7 +2425,8 @@ li.pagination-item--previous a{
     }
     #subcategoryList:not(.is-open){display: none;}
 
-    #subcategoryList .accordion .navList{padding: 0 14px 14px;}
+    #subcategoryList .accordion .navList,
+    #facetedSearch-byPrice .navList{padding: 0 14px 14px;}
     
     .facetedSearch-toggle-indicator{
         text-align: left;

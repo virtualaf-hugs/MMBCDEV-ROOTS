@@ -1,5 +1,58 @@
 # Changelog
 
+## 2.6.2 - (2020-06-10)
+- Formatting adjustment to order confirmation page when using one page checkout (not optimized checkout)
+
+## 2.6.1 - (2020-06-10)
+- Removed empty left column when shop by price is enabled and only one product is visible in a category
+- Removed schema translation file that had been added from last merge with cornerstone. This feature is not currently supported by Roots
+
+## 2.6.0 - (2020-05-29)
+- Added page builder regions to category-nofilters template
+- Fixed special character display in search results heading
+- Fixed stock display when set on the variant level
+- Fixed visibility of price in quick search results when login for pricing is enabled. Previously would show "Login for price" even when a customer was logged in
+- Merged changes from Cornerstone v4.6.1 See version comparison here: https://github.com/bigcommerce/cornerstone/compare/4.5.0...4.6.1
+
+## 2.5.6 - (2020-05-19)
+- Fixed placement of page builder region on mobile product page
+
+## 2.5.5 - (2020-05-19)
+- Fixed accordion (show/hide) functionality on category filters
+- Updated currency dropdown background on mobile to inherit from navigation background setting
+- Fixed quick search bug on mobile where the input box would disappear after clicking into it. This was caused by the screen re-size triggered by the mobile keyboard appearing.
+
+## 2.5.4 - (2020-05-08)
+- Removed "responsive" option from Payment Buttons "Button size". This option breaks the display of the payment icons and causes them to get cut off.
+- Fixed bug on category page where empty left column would show when filters were turned off, and subcategories and shop by price were disabled for the left column. Now the product grid will take up the full width when the left column is empty.
+- Fixed alignment of quantity label on mobile product page.
+- Fixed display of special characters in logged in customers address display and product options display on cart page.
+- Fixed display of "Shop by price" on mobile
+
+## 2.5.3 - (2020-04-29)
+- Fixed visibility of price in related products block when login for pricing is enabled. Previously would show "Login for price" even when a customer was logged in. 
+
+## 2.5.2 - (2020-04-27)
+- Updated theme editor setting options for # of products per page to max out at 100. This is to reflect the limitations of BigCommerce.
+- Removed page builder region from sticky header
+
+## 2.5.1 - (2020-04-09)
+- Fixed build errors relating to schema
+
+## 2.5.0 - (2020-04-09)
+- Fixed bug on product page in firefox where buy block would wrap below main image if image size was less than 60% wide.
+- Fixed left column shop by price block. Previously wasn't possible to enable.
+- Merged changes from Cornerstone v4.5.0 See version comparison here: https://github.com/bigcommerce/cornerstone/compare/4.4.0...4.5.0
+
+## 2.4.2 - (2020-03-16)
+- Fixed bug with theme editor option "# of Product Reviews" where dimensions were shown instead of numbers
+
+## 2.4.1 - (2020-03-11)
+- Fixed bug where product card expanded on hover even when no action button or quick view button were enabled.
+- Fixed text logo bug where text would wrap onto multiple lines before taking up full width of logo container.
+- Fixed brands grid display bug in safari where first row would show 3 and second row would show 4.
+- Updated color of "show more" link in sidebar filters to match general site link color.
+
 ## 2.4.0 - (2020-02-13)
 - Increased width of page content on contact us page so content entered in WISIWYG is the full width of the site.
 - Fixed bug where product weight data on PDP was not reflecting variant weights when selected

@@ -1,4 +1,4 @@
-__webpack_public_path__ = window.__webpack_public_path__;
+__webpack_public_path__ = window.__webpack_public_path__; // eslint-disable-line
 
 import Global from './theme/global';
 
@@ -71,7 +71,8 @@ window.stencilBootstrap = function stencilBootstrap(pageType, contextJSON = null
                 if (loadGlobal) {
                     Global.load(context);
                 }
-                const importPromises = []; 
+
+                const importPromises = [];
 
                 // Find the appropriate page loader based on pageType
                 const pageClassImporter = pageClasses[pageType];

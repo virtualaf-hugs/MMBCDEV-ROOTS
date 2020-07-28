@@ -5,6 +5,7 @@ category:
         limit: {{theme_settings.categorypage_products_per_page}}
 ---
 {{inject "categoryProductsPerPage" theme_settings.categorypage_products_per_page}}
+{{inject "categoryId" category.id}}
 {{#partial "head"}}
     {{#if pagination.category.previous}}
         <link rel="prev" href="{{pagination.category.previous}}">
@@ -21,8 +22,8 @@ category:
         {{> components/common/breadcrumbs breadcrumbs=breadcrumbs}}
         {{#unless theme_settings.hide_category_page_heading }}
             <h1 class="page-heading">{{category.name}}</h1>
-            {{{region name="category_below_header"}}}
         {{/unless}}
+        {{{region name="category_below_header"}}}
         {{{category.description}}}
         {{#if theme_settings.show_subcategories}}
             {{#if category.subcategories}}
@@ -55,7 +56,7 @@ category:
                 <aside class="page-sidebar" id="faceted-search-container">
                     {{> components/category/sidebar}}
                 </aside>
-            {{else if category.subcategories}}
+            {{else if theme_settings.subcategories_left_column}}
                 <aside class="page-sidebar" id="faceted-search-container">
                     {{> components/category/sidebar}}
                 </aside>

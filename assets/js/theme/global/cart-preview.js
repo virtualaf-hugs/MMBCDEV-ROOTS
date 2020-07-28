@@ -56,23 +56,6 @@ export default function (secureBaseUrl, cartId) {
 
     let quantity = 0;
 
-    function parseCookies() {
-        return (document.cookie.split(/; */).reduce((obj, str) => {
-            if (str === '')
-                return obj;
-            const eq = str.indexOf('=');
-            const key = eq > 0 ? str.slice(0, eq) : str;
-            let val = eq > 0 ? str.slice(eq + 1) : null;
-            if (val != null)
-                try {
-                    val = decodeURIComponent(val);
-                }
-            catch (ex) {
-                /* pass */ }
-            obj[key] = val;
-            return obj;
-        }, {})); 
-    }
     if (cartId) {
         // Get existing quantity from localStorage if found
         if (utils.tools.storage.localStorageAvailable()) {
@@ -86,12 +69,13 @@ export default function (secureBaseUrl, cartId) {
         const cartQtyPromise = new Promise((resolve, reject) => {
             utils.api.cart.getCartQuantity({ baseUrl: secureBaseUrl, cartId }, (err, qty) => {
                 if (err) {
-                    reject(err);
+                    // If this appears to be a 404 for the cart ID, set cart quantity to 0
+                    if (err === 'Not Found') {
+                        resolve(0);
+                    } else {
+                        reject(err);
+                    }
                 }
-                window.document.cookie = 'cart_id=' + String(cartId);
-                typeof parseCookies !== 'undefined' ? 
-                window['bc_cookie'] = parseCookies() :
-                console.log('there was an issue loading the cookie parser');
                 resolve(qty);
             });
         });

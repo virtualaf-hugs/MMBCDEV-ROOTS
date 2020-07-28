@@ -1,6 +1,6 @@
 # Roots Theme
 
-Up to date with Cornerstone v4.4.0
+Up to date with Cornerstone v4.6.1
 
 ## Install
 

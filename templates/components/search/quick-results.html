@@ -8,7 +8,7 @@
         {{#each product_results.products}}
             {{#lte @index 3}}
                 <li class="product">
-                    {{> components/products/card settings=../settings alternate=true show_compare=../show_compare theme_settings=../../theme_settings customer=../customer event="list" position=(add @index 1) show_rating=../../settings.show_product_rating}}
+                    {{> components/products/card settings=../settings alternate=true show_compare=../show_compare theme_settings=../../theme_settings customer=../../customer event="list" position=(add @index 1) show_rating=../../settings.show_product_rating}}
                     <a class="overlay-link" href="{{url}}"></a>
                 </li>
             {{/lte}}
@@ -17,6 +17,6 @@
     <button class="quickSearchAll">View All</button>
 {{else}}
     <p class="quickSearchMessage">
-        {{lang 'search.results.quick_count' count=pagination.product_results.total search_query=forms.search.query}}
+        {{{lang 'search.results.quick_count' count=pagination.product_results.total search_query=(sanitize forms.search.query) }}}
     </p>
 {{/if}}
