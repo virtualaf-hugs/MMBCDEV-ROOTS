@@ -185,22 +185,6 @@
             };
         </script>
         <script>
-            window.addEventListener('load', function () {
-                setTimeout(() => {
-                    window.customCookie.init();
-                    window.customCart.init();
-                    
-                    if('{{cart_id}}' && Number(localStorage['cart-quantity'] > 0)) {
-                    document.cookie = 'cart_id={{cart_id}}';
-                    } else {
-                        setTimeout(() => {
-                            typeof parseCookies !== 'undefined' ? 
-                            window['bc_cookie'] = parseCookies() :
-                            console.log('there was an issue loading the cookie parser');
-                        }, 1000);
-                    }
-                }, 1000);
-            }, false);
             if (window.location.pathname == '/') {
                 appendStyle(featurestyles);
             }
