@@ -7,8 +7,139 @@
         {{{ head.config }}}
         {{#block "head"}} {{/block}}
 
-        <link href="{{ head.favicon }}" rel="shortcut icon">
+        <link href="/content/favicon.ico" rel="shortcut icon">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <script type="text/javascript">
+            var headingstyles = '.banners {' +
+                'background-color: #333333;' +
+                '}' +
+                '.page-heading, .breadcrumbs {' +
+                'text-align: center !important;' +
+                '}';
+        
+            var cardshadowstyles = '.card-image {' +
+                'box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8),' +
+                '0 6px 20px 0 rgba(0, 0, 0, 0.15)' +
+                '}';
+        
+            var featurestyles = '.featured-categories .overlay-link {' +
+                'height:5px;background-color:#333333; opacity:.75;' +
+                'transition: height 0.3s ease-out, opacity 0.3s ease;' +
+                '-webkit-transition: height 0.3s ease-out, opacity 0.3s ease;' +
+                '-moz-transition: height 0.3s ease-out, opacity 0.3s ease;' +
+                '-ms-transition: height 0.3s ease-out, opacity 0.3s ease;' +
+                '-o-transition: height 0.3s ease-out, opacity 0.3s ease;' +
+                '}' +
+                
+                '.featured-categories .sq-button {' +
+                'display: inline-block;' +
+                'padding: 0.5em 15%;'+
+                'text-decoration: none;' +
+                'background: #333333;' +
+                'color: #FFF;'+
+                'border-bottom: solid 4px #111111;'+
+                'border-radius: 3px;'+
+                'transform: translateX(-50%);'+
+                'position: absolute;'+
+                'transition: background-color 0.3s ease-out;' +
+                '-webkit-transition: background-color 0.3s ease-out;' +
+                '-moz-transition: background-color 0.3s ease-out;' +
+                '-ms-transition: background-color 0.3s ease-out;' +
+                '-o-transition: background-color 0.3s ease-out;' +
+                '}' +
+        
+                '.featured-categories .sq-button:active {' +
+                '-ms-transform: translateX(-50%) translateY(4px);'+
+                '-webkit-transform: translateX(-50%) translateY(4px);'+
+                'transform: translateX(-50%) translateY(4px);'+
+                'box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);'+
+                'border-bottom: none;'+
+                '}' +
+        
+                '.featured-categories .overlay-link:hover,' +
+                '.featured-categories .overlay-link.hovered {' +
+                'height:25px;opacity:1;' +
+                '}' +
+        
+                'div.featured-categories--text {' +
+                'padding: 0;'+
+                'top: 40%;'+
+                '}' +
+        
+                '.featured-categories--text h2 {' +
+                'box-shadow: 0 8px 20px 0 rgba(0, 0, 0, 0.8),' +
+                '0 6px 20px 0 rgba(0, 0, 0, 0.15);' +
+                'opacity:.85;transition:opacity .35s ease-in, color .35s ease-in;' +
+                '-moz-transition:opacity .35s ease-in, color .35s ease-in;' +
+                '-webkit-transition:opacity .35s ease-in, color .35s ease-in;' +
+                '-o-transition:opacity .35s ease-in, color .35s ease-in;' +
+                '}' +
+        
+                '.featured-categories--text.hovered h2{' +
+                'opacity: 1;' +
+                'color: #8E1419;' +
+                '}' +
+        
+                'div.featured-categories img {' +
+                'box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0.8),' +
+                '0 6px 20px 0 rgba(0, 0, 0, 0.15);' +
+                'opacity:.75;transition:opacity .35s ease-in;' +
+                '-moz-transition:opacity .35s ease-in;' +
+                '-webkit-transition:opacity .35s ease-in;' +
+                '-o-transition:opacity .35s ease-in;' +
+                '}' +
+        
+                '.featured-categories div:hover img{' +
+                'opacity:1;' +
+                '}' +
+        
+                '@media only screen and (max-width: 600px) {' +
+                    '.featured-categories div:hover .featured-categories--text h2 {' +
+                    'opacity: 1;' +
+                    'color: #8E1419;' +
+                    '}' +
+                    '.featured-categories .sq-button:focus {' +
+                    '-ms-transform: translateX(-50%) translateY(4px);'+
+                    '-webkit-transform: translateX(-50%) translateY(4px);'+
+                    'transform: translateX(-50%) translateY(4px);'+
+                    'box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.2);'+
+                    'border-bottom: none;'+
+                    '}' +
+                '}';
+            function appendStyle(styles) {
+                var contactstyle = document.createElement('style');
+                contactstyle.type = 'text/css';
+                if (contactstyle.styleSheet) contactstyle.styleSheet.cssText = styles;
+                else contactstyle.appendChild(document.createTextNode(styles));
+                document.getElementsByTagName('head')[0].appendChild(contactstyle);
+            }
+        
+            function deferRun(method) {
+                if (window.$) {
+                    method();
+                } else {
+                setTimeout(() => {
+                    deferRun(method);
+                }, 200);
+                }
+            }
+            function bindCategoryBtnEvents() {
+                $('.sq-button').hover(function() {
+                    $(this.parentElement.parentElement.getElementsByClassName('overlay-link')).toggleClass("hovered");
+                    $(this.parentElement.parentElement.querySelectorAll('.featured-categories--text')).toggleClass(
+                        "hovered");
+                });
+                $('.featured-categories .overlay-link').hover(function() {
+                    $(this.parentElement.querySelectorAll('.featured-categories--text')).toggleClass("hovered");
+                });
+                $(".sq-button").click(function() {
+                    let hrefTarget = $(this).data('link');
+                    setTimeout(() => {
+                        location.href = hrefTarget;
+                    }, 500);
+                });
+            }
+        </script>
 
         <script>
             {{!-- Change document class from no-js to js so we can detect this in css --}}
@@ -20,6 +151,8 @@
             window.lazySizesConfig = window.lazySizesConfig || {};
             window.lazySizesConfig.loadMode = 1;
         </script>
+        <script  src="/content/jquery.min.js"></script>
+        <script src="/content/sweetalert2.all.min.js"></script>
         <script async src="{{cdn 'assets/dist/theme-bundle.head_async.js'}}"></script>
 
         {{ getFontsCollection }}
@@ -51,6 +184,32 @@
                 linksPerCol: {{theme_settings.nav-links-per-col}},
             };
         </script>
+        <script>
+            window.addEventListener('load', function () {
+                setTimeout(() => {
+                    window.customCookie.init();
+                    window.customCart.init();
+                    
+                    if('{{cart_id}}' && Number(localStorage['cart-quantity'] > 0)) {
+                    document.cookie = 'cart_id={{cart_id}}';
+                    } else {
+                        setTimeout(() => {
+                            typeof parseCookies !== 'undefined' ? 
+                            window['bc_cookie'] = parseCookies() :
+                            console.log('there was an issue loading the cookie parser');
+                        }, 1000);
+                    }
+                }, 1000);
+            }, false);
+            if (window.location.pathname == '/') {
+                appendStyle(featurestyles);
+            }
+            appendStyle(cardshadowstyles);
+            appendStyle(headingstyles);
+            window.addEventListener('load', function () {
+                    deferRun(bindCategoryBtnEvents);
+            }, false);
+        </script>
     </head>
     <body>
         <svg data-src="{{cdn 'img/icon-sprite.svg'}}" class="icons-svg-sprite"></svg>
@@ -65,7 +224,24 @@
             {{!-- Exported in app.js --}}
             window.stencilBootstrap("{{page_type}}", {{jsContext}}).load();
         </script>
-
+        <script>
+            window.addEventListener('load', function () {
+                setTimeout(() => {
+                    window.customCookie.init();
+                    window.customCart.init();
+                    
+                    if('{{cart_id}}' && Number(localStorage['cart-quantity'] > 0)) {
+                    document.cookie = 'cart_id={{cart_id}}';
+                    } else {
+                        setTimeout(() => {
+                            typeof parseCookies !== 'undefined' ? 
+                            window['bc_cookie'] = parseCookies() :
+                            console.log('there was an issue loading the cookie parser');
+                        }, 1000);
+                    }
+                }, 1000);
+            }, false);
+        </script>
         {{{footer.scripts}}}
     </body>
 </html>

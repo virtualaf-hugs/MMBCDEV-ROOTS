@@ -15,6 +15,9 @@ import loadingProgressBar from './global/loading-progress-bar';
 import svgInjector from './global/svg-injector';
 import rootsLoaded from './roots/global';
 import objectFitImages from './global/object-fit-polyfill';
+import swal from './global/sweet-alert';
+import Custom_Cart from './global/custom_cart';
+import Custom_Cookie from './global/custom_cookie';
 
 export default class Global extends PageManager {
     onReady() {
@@ -37,5 +40,7 @@ export default class Global extends PageManager {
         svgInjector();
         rootsLoaded();
         objectFitImages();
+        window.customCart = new Custom_Cart();
+        window.customCookie = new Custom_Cookie();
     }
 }

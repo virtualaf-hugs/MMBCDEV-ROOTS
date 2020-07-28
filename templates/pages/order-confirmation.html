@@ -31,6 +31,11 @@
     
     {{{ checkout.order_confirmation_content }}}
     
+    <script type="text/javascript">
+        window.bc_order_id = {{ checkout.order.id }};
+        document.cookie = "bc_order_id=" + {{ checkout.order.id }};
+    </script>
+        
     {{{ footer.scripts }}}
 </div>
 {{/partial}}
