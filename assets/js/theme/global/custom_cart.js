@@ -29,6 +29,7 @@ export default class Custom_Cart {
             .hide(); // TODO: temporary until roper pulls in his cart components
         window['fetchCart'] = this.fetchCart;
         window['addCartITEMS'] = this.addCartITEMS;
+        window['addCartITEMS2'] = this.addCartITEMS2;
         window['getCart'] = this.getCart;
         window['getLineItems'] = this.getLineItems;
         window['cart2API'] = this.cart2API;
@@ -43,6 +44,7 @@ export default class Custom_Cart {
         window['lineItemTest'] = this.getTestData;
         window['returnCartQty'] = this.returnCartQty;
     }
+    
     getTestData() {
         return JSON.stringify({
             'lineItems': [{
@@ -154,6 +156,55 @@ export default class Custom_Cart {
             xhr.send(messageData);
         } catch (err) {
             console.log(err);
+        }
+    }
+
+    /******************************************************************************************/
+    //           STOREFRONT API ADD TO CART FUNCTION AWAIT FETCH ARRAY LINEITEMS
+    /******************************************************************************************/
+    addCartITEMS2(lineItems, callback) {
+        if (lineItems.length > 0) {
+            console.log('Adding items to your cart...');
+            fetch('/api/storefront/cart')
+                .then(response => response.json())
+                .then(cart => {
+                    if(cart.length > 0) {
+                        return addToExistingCart(cart[0].id);
+                    } else {
+                        return createNewCart();
+                    }
+                })
+                .catch(err => console.log(err));
+        }
+        async function createNewCart() {
+            const response = await fetch('/api/storefront/carts', {
+                credentials: 'include',
+                method: 'POST',
+                body: JSON.stringify({'lineItems': lineItems})
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                return Promise.reject('There was an issue adding items to your cart. Please try again.')
+            } else {
+                document.cookie = 'cart_id=' + String(data.id); 
+                console.log(data);
+                callback();
+            }
+        }
+        async function addToExistingCart(cart_id) {
+            const response = await fetch(`/api/storefront/carts/${cart_id}/items`, {
+                credentials: 'include',
+                method: 'POST',
+                body: JSON.stringify({'lineItems': lineItems})
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                return Promise.reject('There was an issue adding items to your cart. Please try again.')
+            } else {
+                document.cookie = 'cart_id=' + String(data.id);
+                console.log(data);
+                callback();
+            }
         }
     }
 
