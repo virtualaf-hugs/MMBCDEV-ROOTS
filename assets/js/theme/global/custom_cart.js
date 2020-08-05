@@ -44,11 +44,7 @@ export default class Custom_Cart {
         window['lineItemTest'] = this.getTestData;
         window['lineItemTest2'] = this.getTestData2;
         window['returnCartQty'] = this.returnCartQty;
-        window['bindPromoCodeEvents'] = this.bindPromoCodeEvents;
-        window['bindGiftCertificateEvents'] = this.bindGiftCertificateEvents;
-        window['bindEstimatorEvents'] = this.bindEstimatorEvents;
         window['bindEvents'] = this.bindEvents;
-        
     }
 
     getTestData() {
@@ -503,149 +499,7 @@ export default class Custom_Cart {
         console.log('Cart Events Bound');
     }
 
-    bindPromoCodeEvents() {
-        var utils = stencilUtils;
-        const $couponContainer = $('.coupon-code');
-        const $couponForm = $('.coupon-form');
-        const $codeInput = $('[name="couponcode"]', $couponForm);
-
-        $('.coupon-code-add').on('click', event => {
-            event.preventDefault();
-
-            $(event.currentTarget).hide();
-            $couponContainer.show();
-            $('.coupon-code-cancel').show();
-            $codeInput.trigger('focus');
-        });
-
-        $('.coupon-code-cancel').on('click', event => {
-            event.preventDefault();
-
-            $couponContainer.hide();
-            $('.coupon-code-cancel').hide();
-            $('.coupon-code-add').show();
-        });
-
-        $couponForm.on('submit', event => {
-            const code = $codeInput.val();
-
-            event.preventDefault();
-
-            // Empty code
-            if (!code) {
-                return swal.fire({
-                    text: $codeInput.data('error'),
-                    icon: 'error',
-                });
-            }
-
-            utils.api.cart.applyCode(code, (err, response) => {
-                if (response.data.status === 'success') {
-                    this.refreshContent();
-                } else {
-                    swal.fire({
-                        text: response.data.errors.join('\n'),
-                        icon: 'error',
-                    });
-                }
-            });
-        });
-    }
-
-    bindGiftCertificateEvents() {
-        var utils = stencilUtils;
-        const $certContainer = $('.gift-certificate-code');
-        const $certForm = $('.cart-gift-certificate-form');
-        const $certInput = $('[name="certcode"]', $certForm);
-
-        $('.gift-certificate-add').on('click', event => {
-            event.preventDefault();
-            $(event.currentTarget).toggle();
-            $certContainer.toggle();
-            $('.gift-certificate-cancel').toggle();
-        });
-
-        $('.gift-certificate-cancel').on('click', event => {
-            event.preventDefault();
-            $certContainer.toggle();
-            $('.gift-certificate-add').toggle();
-            $('.gift-certificate-cancel').toggle();
-        });
-
-        $certForm.on('submit', event => {
-            const code = $certInput.val();
-
-            event.preventDefault();
-
-            if (!giftCertCheck(code)) {
-                return swal.fire({
-                    text: $certInput.data('error'),
-                    icon: 'error',
-                });
-            }
-
-            utils.api.cart.applyGiftCertificate(code, (err, resp) => {
-                if (resp.data.status === 'success') {
-                    this.refreshContent();
-                } else {
-                    swal.fire({
-                        text: resp.data.errors.join('\n'),
-                        icon: 'error',
-                    });
-                }
-            });
-        });
-    }
-
-    bindEstimatorEvents() {
-        var utils = stencilUtils;
-        const $estimatorContainer = $('.shipping-estimator');
-        const $estimatorForm = $('.estimator-form');
-
-        $estimatorForm.on('submit', event => {
-            const params = {
-                country_id: $('[name="shipping-country"]', $estimatorForm).val(),
-                state_id: $('[name="shipping-state"]', $estimatorForm).val(),
-                city: $('[name="shipping-city"]', $estimatorForm).val(),
-                zip_code: $('[name="shipping-zip"]', $estimatorForm).val(),
-            };
-
-            event.preventDefault();
-
-            utils.api.cart.getShippingQuotes(params, 'cart/shipping-quotes', (err, response) => {
-                $('.shipping-quotes').html(response.content);
-
-                // bind the select button
-                $('.select-shipping-quote').on('click', clickEvent => {
-                    const quoteId = $('.shipping-quote:checked').val();
-
-                    clickEvent.preventDefault();
-
-                    utils.api.cart.submitShippingQuote(quoteId, () => {
-                        window.location.reload();
-                    });
-                });
-            });
-        });
-
-        $('.shipping-estimate-show').on('click', event => {
-            event.preventDefault();
-
-            $(event.currentTarget).hide();
-            $estimatorContainer.removeClass('u-hiddenVisually');
-            $('.shipping-estimate-hide').show();
-        });
-
-
-        $('.shipping-estimate-hide').on('click', event => {
-            event.preventDefault();
-
-            $estimatorContainer.addClass('u-hiddenVisually');
-            $('.shipping-estimate-show').show();
-            $('.shipping-estimate-hide').hide();
-        });
-    }
-
+    
     /******************************************************************************************/
     //                        FETCH API SAMPLE OUTPUTEXPAMPLE
     /******************************************************************************************/
@@ -881,9 +735,7 @@ export default class Custom_Cart {
     }
 
     bindEvents() {
-        bindCartEvents();
-        bindPromoCodeEvents();
-        bindGiftCertificateEvents();
-        bindEstimatorEvents();
+        //bindCartEvents();
+        $('[data-cart-binder]').trigger('click');
     }
 }

@@ -9,7 +9,7 @@ import swal from './global/sweet-alert';
 export default class Cart extends PageManager {
     onReady() {
         this.$cartContent = $('[data-cart-content]');
-        this.$cartUpdater = $('[data-cart-updater]');
+        this.$cartBinder = $('[data-cart-binder]');
         this.$cartMessages = $('[data-cart-status]');
         this.$cartTotals = $('[data-cart-totals]');
         this.$overlay = $('[data-cart] .loadingOverlay')
@@ -227,10 +227,10 @@ export default class Cart extends PageManager {
         });
 
         // cart update
-        $('[data-cart-update]', this.$cartUpdater).on('click', event => {
+        $('[data-cart-update]', this.$cartBinder).on('click', event => {
             event.preventDefault();
             // update cart quantity
-            this.refreshContent();
+            this.bindEvents();
         });
         
         // cart qty manually updates
