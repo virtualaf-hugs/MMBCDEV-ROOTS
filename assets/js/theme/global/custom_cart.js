@@ -48,6 +48,8 @@ export default class Custom_Cart {
         window['bindGiftCertificateEvents'] = this.bindGiftCertificateEvents;
         window['bindGiftWrappingEvents'] = this.bindGiftWrappingEvents;
         window['bindEstimatorEvents'] = this.bindEstimatorEvents;
+        window['bindEvents'] = this.bindEvents;
+        
     }
 
     getTestData() {
