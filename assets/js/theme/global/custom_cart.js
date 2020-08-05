@@ -4,7 +4,6 @@
 import $ from 'jquery';
 import _ from 'lodash';
 import swal from './sweet-alert';
-import ShippingEstimator from './cart/shipping-estimator';
 
 
 export default class Custom_Cart {
