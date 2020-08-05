@@ -28,8 +28,8 @@ export default class Custom_Cart {
         window['$overlay'] = window.$('[data-cart] .loadingOverlay')
             .hide(); // TODO: temporary until roper pulls in his cart components
         window['fetchCart'] = this.fetchCart;
-        window['addCartITEMS'] = this.addCartITEMS;
-        window['addCartITEMS2'] = this.addCartITEMS2;
+        window['addCartItems'] = this.addCartItems;
+        window['addCartItems2'] = this.addCartItems2;
         window['getCart'] = this.getCart;
         window['getLineItems'] = this.getLineItems;
         window['cart2API'] = this.cart2API;
@@ -42,9 +42,10 @@ export default class Custom_Cart {
         window['refreshContent'] = this.refreshContent;
         window['execascade'] = this.execascade;
         window['lineItemTest'] = this.getTestData;
+        window['lineItemTest2'] = this.getTestData2;
         window['returnCartQty'] = this.returnCartQty;
     }
-    
+
     getTestData() {
         return JSON.stringify({
             'lineItems': [{
@@ -57,6 +58,18 @@ export default class Custom_Cart {
                 'variantId': 97
             }]
         });
+    }
+
+    getTestData2() {
+        return [{
+                'quantity': 3,
+                'productId': 116,
+                'variantId': 96
+            }, {
+                'quantity': 1,
+                'productId': 117,
+                'variantId': 97
+            }];
     }
 
     parseCookies() {
@@ -115,7 +128,7 @@ export default class Custom_Cart {
     /******************************************************************************************/
     //                       STOREFRONT API ADD TO CART FUNCTION
     /******************************************************************************************/
-    addCartITEMS(cartId, messageData, callback) {
+    addCartItems(cartId, messageData, callback) {
         var xhr = new XMLHttpRequest(),
             postURL = ((typeof cartId !== 'undefined' && cartId !== 'null') && cartId ?
                 '/api/storefront/carts/' + cartId + '/items' :
@@ -162,7 +175,7 @@ export default class Custom_Cart {
     /******************************************************************************************/
     //           STOREFRONT API ADD TO CART FUNCTION AWAIT FETCH ARRAY LINEITEMS
     /******************************************************************************************/
-    addCartITEMS2(lineItems, callback) {
+    addCartItems2(lineItems, callback) {
         if (lineItems.length > 0) {
             console.log('Adding items to your cart...');
             fetch('/api/storefront/cart')
