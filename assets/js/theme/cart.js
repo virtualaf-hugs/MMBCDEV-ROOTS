@@ -9,6 +9,7 @@ import swal from './global/sweet-alert';
 export default class Cart extends PageManager {
     onReady() {
         this.$cartContent = $('[data-cart-content]');
+        this.$cartUpdater = $('[data-cart-updater]');
         this.$cartMessages = $('[data-cart-status]');
         this.$cartTotals = $('[data-cart-totals]');
         this.$overlay = $('[data-cart] .loadingOverlay')
@@ -225,6 +226,13 @@ export default class Cart extends PageManager {
             cartUpdate($target);
         });
 
+        // cart update
+        $('[data-cart-update]', this.$cartUpdater).on('click', event => {
+            event.preventDefault();
+            // update cart quantity
+            this.refreshContent();
+        });
+        
         // cart qty manually updates
         $('.cart-item-qty-input', this.$cartContent).on('focus', function onQtyFocus() {
             preVal = this.value;
