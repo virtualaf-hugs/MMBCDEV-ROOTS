@@ -4,6 +4,7 @@
 import $ from 'jquery';
 import _ from 'lodash';
 import swal from './sweet-alert';
+import ShippingEstimator from './cart/shipping-estimator';
 
 
 export default class Custom_Cart {
@@ -44,6 +45,10 @@ export default class Custom_Cart {
         window['lineItemTest'] = this.getTestData;
         window['lineItemTest2'] = this.getTestData2;
         window['returnCartQty'] = this.returnCartQty;
+        window['bindPromoCodeEvents'] = this.bindPromoCodeEvents;
+        window['bindGiftCertificateEvents'] = this.bindGiftCertificateEvents;
+        window['bindGiftWrappingEvents'] = this.bindGiftWrappingEvents;
+        window['bindEstimatorEvents'] = this.bindEstimatorEvents;
     }
 
     getTestData() {
@@ -498,6 +503,213 @@ export default class Custom_Cart {
         console.log('Cart Events Bound');
     }
 
+    bindPromoCodeEvents() {
+        var utils = stencilUtils;
+        const $couponContainer = $('.coupon-code');
+        const $couponForm = $('.coupon-form');
+        const $codeInput = $('[name="couponcode"]', $couponForm);
+
+        $('.coupon-code-add').on('click', event => {
+            event.preventDefault();
+
+            $(event.currentTarget).hide();
+            $couponContainer.show();
+            $('.coupon-code-cancel').show();
+            $codeInput.trigger('focus');
+        });
+
+        $('.coupon-code-cancel').on('click', event => {
+            event.preventDefault();
+
+            $couponContainer.hide();
+            $('.coupon-code-cancel').hide();
+            $('.coupon-code-add').show();
+        });
+
+        $couponForm.on('submit', event => {
+            const code = $codeInput.val();
+
+            event.preventDefault();
+
+            // Empty code
+            if (!code) {
+                return swal.fire({
+                    text: $codeInput.data('error'),
+                    icon: 'error',
+                });
+            }
+
+            utils.api.cart.applyCode(code, (err, response) => {
+                if (response.data.status === 'success') {
+                    this.refreshContent();
+                } else {
+                    swal.fire({
+                        text: response.data.errors.join('\n'),
+                        icon: 'error',
+                    });
+                }
+            });
+        });
+    }
+
+    bindGiftCertificateEvents() {
+        var utils = stencilUtils;
+        const $certContainer = $('.gift-certificate-code');
+        const $certForm = $('.cart-gift-certificate-form');
+        const $certInput = $('[name="certcode"]', $certForm);
+
+        $('.gift-certificate-add').on('click', event => {
+            event.preventDefault();
+            $(event.currentTarget).toggle();
+            $certContainer.toggle();
+            $('.gift-certificate-cancel').toggle();
+        });
+
+        $('.gift-certificate-cancel').on('click', event => {
+            event.preventDefault();
+            $certContainer.toggle();
+            $('.gift-certificate-add').toggle();
+            $('.gift-certificate-cancel').toggle();
+        });
+
+        $certForm.on('submit', event => {
+            const code = $certInput.val();
+
+            event.preventDefault();
+
+            if (!giftCertCheck(code)) {
+                return swal.fire({
+                    text: $certInput.data('error'),
+                    icon: 'error',
+                });
+            }
+
+            utils.api.cart.applyGiftCertificate(code, (err, resp) => {
+                if (resp.data.status === 'success') {
+                    this.refreshContent();
+                } else {
+                    swal.fire({
+                        text: resp.data.errors.join('\n'),
+                        icon: 'error',
+                    });
+                }
+            });
+        });
+    }
+
+    bindEstimatorEvents() {
+        var utils = stencilUtils;
+        const $estimatorContainer = $('.shipping-estimator');
+        const $estimatorForm = $('.estimator-form');
+
+        $estimatorForm.on('submit', event => {
+            const params = {
+                country_id: $('[name="shipping-country"]', $estimatorForm).val(),
+                state_id: $('[name="shipping-state"]', $estimatorForm).val(),
+                city: $('[name="shipping-city"]', $estimatorForm).val(),
+                zip_code: $('[name="shipping-zip"]', $estimatorForm).val(),
+            };
+
+            event.preventDefault();
+
+            utils.api.cart.getShippingQuotes(params, 'cart/shipping-quotes', (err, response) => {
+                $('.shipping-quotes').html(response.content);
+
+                // bind the select button
+                $('.select-shipping-quote').on('click', clickEvent => {
+                    const quoteId = $('.shipping-quote:checked').val();
+
+                    clickEvent.preventDefault();
+
+                    utils.api.cart.submitShippingQuote(quoteId, () => {
+                        window.location.reload();
+                    });
+                });
+            });
+        });
+
+        $('.shipping-estimate-show').on('click', event => {
+            event.preventDefault();
+
+            $(event.currentTarget).hide();
+            $estimatorContainer.removeClass('u-hiddenVisually');
+            $('.shipping-estimate-hide').show();
+        });
+
+
+        $('.shipping-estimate-hide').on('click', event => {
+            event.preventDefault();
+
+            $estimatorContainer.addClass('u-hiddenVisually');
+            $('.shipping-estimate-show').show();
+            $('.shipping-estimate-hide').hide();
+        });
+    }
+
+    bindGiftWrappingEvents() {
+        var utils = stencilUtils;
+        const modal = defaultModal();
+
+        $('[data-item-giftwrap]').on('click', event => {
+            const itemId = $(event.currentTarget).data('itemGiftwrap');
+            const options = {
+                template: 'cart/modals/gift-wrapping-form',
+            };
+
+            event.preventDefault();
+
+            modal.open();
+
+            utils.api.cart.getItemGiftWrappingOptions(itemId, options, (err, response) => {
+                modal.updateContent(response.content);
+
+                this.bindGiftWrappingForm();
+            });
+        });
+    }
+
+    bindGiftWrappingForm() {
+        $('.giftWrapping-select').on('change', event => {
+            const $select = $(event.currentTarget);
+            const id = $select.val();
+            const index = $select.data('index');
+
+            if (!id) {
+                return;
+            }
+
+            const allowMessage = $select.find(`option[value=${id}]`).data('allowMessage');
+
+            $(`.giftWrapping-image-${index}`).hide();
+            $(`#giftWrapping-image-${index}-${id}`).show();
+
+            if (allowMessage) {
+                $(`#giftWrapping-message-${index}`).show();
+            } else {
+                $(`#giftWrapping-message-${index}`).hide();
+            }
+        });
+
+        $('.giftWrapping-select').trigger('change');
+
+        function toggleViews() {
+            const value = $('input:radio[name ="giftwraptype"]:checked').val();
+            const $singleForm = $('.giftWrapping-single');
+            const $multiForm = $('.giftWrapping-multiple');
+
+            if (value === 'same') {
+                $singleForm.show();
+                $multiForm.hide();
+            } else {
+                $singleForm.hide();
+                $multiForm.show();
+            }
+        }
+
+        $('[name="giftwraptype"]').on('click', toggleViews);
+
+        toggleViews();
+    }
     /******************************************************************************************/
     //                        FETCH API SAMPLE OUTPUTEXPAMPLE
     /******************************************************************************************/
@@ -597,7 +809,7 @@ export default class Custom_Cart {
                 return Promise.resolve(true);
               })
             .then((response)=>{
-            return Promise.resolve(response ? (bindCartEvents(),window.$overlay.hide(), true) : (console.log('fail at response1'), false));
+            return Promise.resolve(response ? (bindEvents(),window.$overlay.hide(), true) : (console.log('fail at response1'), false));
             })
             .then((response2)=>{
                 return Promise.resolve(response2 ? (cartQTY ? cartQTY : returnCartQty()) : (console.log('fail at response2'), false));     
@@ -730,5 +942,13 @@ export default class Custom_Cart {
             console.log('There was a problem loading the cart before refresh content');
         }
 
+    }
+
+    bindEvents() {
+        this.bindCartEvents();
+        this.bindPromoCodeEvents();
+        this.bindGiftWrappingEvents();
+        this.bindGiftCertificateEvents();
+        this.bindEstimatorEvents();
     }
 }
