@@ -8,13 +8,7 @@ import swal from './sweet-alert';
 
 export default class Custom_Cart {
     onReady() {
-        this.$body = window.$('body');
-        this.$cartContent = window.$('[data-cart-content]');
-        this.$cartMessages = window.$('[data-cart-status]');
-        this.$cartTotals = window.$('[data-cart-totals]');
-        this.$overlay = window.$('[data-cart] .loadingOverlay')
-            .hide(); // TODO: temporary until roper pulls in his cart components
-        
+        console.log('initializing Custom_Cart class');
     }
     
     /******************************************************************************************/
@@ -23,6 +17,7 @@ export default class Custom_Cart {
     init() {
         window['$body']  = window.$('body');
         window['$cartContent'] = window.$('[data-cart-content]');
+        window['$cartBinder'] = window.$('[data-cart-binder]');
         window['$cartMessages'] = window.$('[data-cart-status]');
         window['$cartTotals'] = window.$('[data-cart-totals]');
         window['$overlay'] = window.$('[data-cart] .loadingOverlay')
@@ -44,7 +39,6 @@ export default class Custom_Cart {
         window['lineItemTest'] = this.getTestData;
         window['lineItemTest2'] = this.getTestData2;
         window['returnCartQty'] = this.returnCartQty;
-        window['bindEvents'] = this.bindEvents;
     }
 
     getTestData() {
@@ -457,44 +451,45 @@ export default class Custom_Cart {
     //                                  Bind Cart Events 
     /******************************************************************************************/
     bindCartEvents() {
-        let preVal;
-        
-        // cart update
-        $('[data-cart-update]', $cartContent).on('click', event => {
-            var $target = $(event.currentTarget);
+        $cartBinder.trigger('click');
+        // let preVal;
+        // this.$cartContent = window.$('[data-cart-content]');
+        // // cart update
+        // $('[data-cart-update]', $cartContent).on('click', event => {
+        //     var $target = $(event.currentTarget);
 
-            event.preventDefault();
+        //     event.preventDefault();
 
-            // update cart quantity
-            cartUpdate($target);
-        });
+        //     // update cart quantity
+        //     cartUpdate($target);
+        // });
 
-        // cart qty manually updates
-        $('.cart-item-qty-input', $cartContent).on('focus', function onQtyFocus() {
-            preVal = this.value;
-        }).change(event => {
-            var $target = $(event.currentTarget);
-            event.preventDefault();
+        // // cart qty manually updates
+        // $('.cart-item-qty-input', $cartContent).on('focus', function onQtyFocus() {
+        //     preVal = this.value;
+        // }).change(event => {
+        //     var $target = $(event.currentTarget);
+        //     event.preventDefault();
 
-            // update cart quantity
-            cartUpdateQtyTextChange($target, preVal);
-        });
+        //     // update cart quantity
+        //     cartUpdateQtyTextChange($target, preVal);
+        // });
 
-        $('.cart-remove', $cartContent).on('click', event => {
-            var itemId = $(event.currentTarget).data('cartItemid');
-            var string = $(event.currentTarget).data('confirmDelete');
-            swal.fire({
-                text: string,
-                icon: 'warning',
-                showCancelButton: true,
-            }).then((result) => {
-                if (result.value) {
-                    // remove item from cart
-                    cartRemoveItem(itemId);
-                }
-            });
-            event.preventDefault();
-        });
+        // $('.cart-remove', $cartContent).on('click', event => {
+        //     var itemId = $(event.currentTarget).data('cartItemid');
+        //     var string = $(event.currentTarget).data('confirmDelete');
+        //     swal.fire({
+        //         text: string,
+        //         icon: 'warning',
+        //         showCancelButton: true,
+        //     }).then((result) => {
+        //         if (result.value) {
+        //             // remove item from cart
+        //             cartRemoveItem(itemId);
+        //         }
+        //     });
+        //     event.preventDefault();
+        // });
 
         console.log('Cart Events Bound');
     }
@@ -599,7 +594,7 @@ export default class Custom_Cart {
                 return Promise.resolve(true);
               })
             .then((response)=>{
-            return Promise.resolve(response ? (bindEvents(),window.$overlay.hide(), true) : (console.log('fail at response1'), false));
+            return Promise.resolve(response ? (bindCartEvents(),window.$overlay.hide(), true) : (console.log('fail at response1'), false));
             })
             .then((response2)=>{
                 return Promise.resolve(response2 ? (cartQTY ? cartQTY : returnCartQty()) : (console.log('fail at response2'), false));     
@@ -732,10 +727,5 @@ export default class Custom_Cart {
             console.log('There was a problem loading the cart before refresh content');
         }
 
-    }
-
-    bindEvents() {
-        //bindCartEvents();
-        $('[data-cart-binder]').trigger('click');
     }
 }
