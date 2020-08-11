@@ -679,7 +679,7 @@
             "optimizedCheckout-buttonSecondary-backgroundColorActive": "#0f0f0f",
             "optimizedCheckout-buttonSecondary-borderColorHover": "#0f0f0f",
             "optimizedCheckout-buttonSecondary-borderColorActive": "#0f0f0f",
-            "optimizedCheckout-link-color": "#4e4e4e",
+            "optimizedCheckout-link-color": "##8e1419",
             "optimizedCheckout-link-font": "Helvetica",
             "optimizedCheckout-discountBanner-backgroundColor": "#F0F0F0",
             "optimizedCheckout-discountBanner-textColor": "#2d2d2d",

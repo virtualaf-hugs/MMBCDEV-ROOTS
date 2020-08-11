@@ -2,8 +2,6 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-console */
 import $ from 'jquery';
-import _ from 'lodash';
-import swal from './sweet-alert';
 
 
 export default class Custom_Cart {
@@ -15,13 +13,6 @@ export default class Custom_Cart {
     //                                     TEST DATA
     /******************************************************************************************/
     init() {
-        window['$body']  = window.$('body');
-        window['$cartContent'] = window.$('[data-cart-content]');
-        window['$cartBinder'] = window.$('[data-cart-binder]');
-        window['$cartMessages'] = window.$('[data-cart-status]');
-        window['$cartTotals'] = window.$('[data-cart-totals]');
-        window['$overlay'] = window.$('[data-cart] .loadingOverlay')
-            .hide(); // TODO: temporary until roper pulls in his cart components
         window['fetchCart'] = this.fetchCart;
         window['addCartItems'] = this.addCartItems;
         window['addCartItems2'] = this.addCartItems2;
@@ -29,10 +20,7 @@ export default class Custom_Cart {
         window['getLineItems'] = this.getLineItems;
         window['cart2API'] = this.cart2API;
         window['getCartQty'] = this.getCartQty;
-        window['cartRemoveItem'] = this.cartRemoveItem;
-        window['cartUpdateQtyTextChange'] = this.cartUpdateQtyTextChange;
-        window['cartUpdate'] = this.cartUpdate;
-        window['bindCartEvents'] = this.bindCartEvents;
+        //window['bindCartEvents'] = this.bindCartEvents;
         window['updateCart'] = this.updateCart;
         window['refreshContent'] = this.refreshContent;
         window['execascade'] = this.execascade;
@@ -185,6 +173,7 @@ export default class Custom_Cart {
                 .catch(err => console.log(err));
         }
         async function createNewCart() {
+            let cartQty = 0;
             const response = await fetch('/api/storefront/carts', {
                 credentials: 'include',
                 method: 'POST',
@@ -195,11 +184,31 @@ export default class Custom_Cart {
                 return Promise.reject('There was an issue adding items to your cart. Please try again.')
             } else {
                 document.cookie = 'cart_id=' + String(data.id); 
-                console.log(data);
-                callback();
+                return Promise.resolve(data)
+                .then((data) => 
+                {
+                    let lineItems = data.lineItems;
+                    return Promise.resolve(lineItems)
+                })
+                .then((data) => 
+                {
+                    Promise.resolve(Object.entries(data).forEach(([key, value]) => {
+                        console.log('calculating quantity for: ' + key);
+                        cartQty += getCartQty(value);
+                    })).then(() => {
+                        window['addCartQty'] = cartQty;
+                        console.log('Calculated Cart Quantity = ' + cartQty);
+                        return Promise.resolve(true);
+                    }).then((data) => {
+                        if (data === true) {
+                            callback();
+                        }
+                    });
+                });
             }
         }
         async function addToExistingCart(cart_id) {
+            let cartQty = 0;
             const response = await fetch(`/api/storefront/carts/${cart_id}/items`, {
                 credentials: 'include',
                 method: 'POST',
@@ -210,8 +219,27 @@ export default class Custom_Cart {
                 return Promise.reject('There was an issue adding items to your cart. Please try again.')
             } else {
                 document.cookie = 'cart_id=' + String(data.id);
-                console.log(data);
-                callback();
+                return Promise.resolve(data)
+                .then((data) => 
+                {
+                    let lineItems = data.lineItems;
+                    return Promise.resolve(lineItems)
+                })
+                .then((data) => 
+                {
+                    Promise.resolve(Object.entries(data).forEach(([key, value]) => {
+                        console.log('calculating quantity for: ' + key);
+                        cartQty += getCartQty(value);
+                    })).then(() => {
+                        window['addCartQty'] = cartQty;
+                        console.log('Calculated Cart Quantity = ' + cartQty);
+                        return Promise.resolve(true);
+                    }).then((data) => {
+                        if (data === true) {
+                            callback();
+                        }
+                    });
+                });
             }
         }
     }
@@ -292,208 +320,6 @@ export default class Custom_Cart {
         return cartQty;
     }
 
-    /******************************************************************************************/
-    //                                  Remove Cart Item
-    /******************************************************************************************/
-
-    cartRemoveItem(itemId) {
-        var utils = stencilUtils;
-        $overlay = $('[data-cart] .loadingOverlay');
-        $overlay.show();
-        utils.api.cart.itemRemove(itemId, (err, response) => {
-            if (response.data.status === 'succeed') {
-                execascade();
-            } else {
-                swal.fire({
-                    text: response.data.errors.join('\n'),
-                    icon: 'error',
-                });
-            }
-        });
-    }
-
-
-    /******************************************************************************************/
-    //                            Cart Update Quantity Text Change 
-    /******************************************************************************************/
-    cartUpdateQtyTextChange($target, preVal = null) {
-        var utils = stencilUtils;
-        var itemId = $target.data('cartItemid');
-        var $el = $(`#qty-${itemId}`);
-        var maxQty = parseInt($el.data('quantityMax'), 10);
-        var minQty = parseInt($el.data('quantityMin'), 10);
-        var oldQty = preVal !== null ? preVal : minQty;
-        var minError = $el.data('quantityMinError');
-        var maxError = $el.data('quantityMaxError');
-        var newQty = parseInt(Number($el.val()), 10);
-        let invalidEntry;
-        window['$overlay'] = window.$('[data-cart] .loadingOverlay');
-
-
-        // Does not quality for min/max quantity
-        if (!newQty) {
-            invalidEntry = $el.val();
-            $el.val(oldQty);
-            return swal.fire({
-                text: `${invalidEntry} is not a valid entry`,
-                icon: 'error',
-            });
-        } else if (newQty < minQty) {
-            $el.val(oldQty);
-            return swal.fire({
-                text: minError,
-                icon: 'error',
-            });
-        } else if (maxQty > 0 && newQty > maxQty) {
-            $el.val(oldQty);
-            return swal.fire({
-                text: maxError,
-                icon: 'error',
-            });
-        }
-
-        $overlay.show();
-        utils.api.cart.itemUpdate(itemId, newQty, (err, response) => {
-            $overlay.hide();
-            let quantity = Number(localStorage['cart-quantity']) + (newQty - oldQty);
-            if (response.data.status === 'succeed') {
-                if (utils.tools.storage.localStorageAvailable()) { // if the quantity is changed "1" from "0", we have to remove the row.
-                    let remove = (newQty === 0);
-                    
-                    window.$('.cart-quantity')
-                        .text(quantity)
-                        .toggleClass('countPill--positive', newQty > 0);
-                    localStorage.setItem('cart-quantity', quantity);
-                    refreshContent(remove, true);
-                } else {
-                    let remove = (newQty === 0);
-                    let quantity = window.cartQty + (newQty - oldQty);
-                    window.$('.cart-quantity')
-                        .text(quantity)
-                        .toggleClass('countPill--positive', newQty > 0);
-                    localStorage.setItem('cart-quantity', quantity);
-                    refreshContent(remove, true);
-                }
-            } else {
-                $el.val(oldQty);
-                swal.fire({
-                    text: response.data.errors.join('\n'),
-                    icon: 'error',
-                });
-            }
-        });
-    }
-
-
-    /******************************************************************************************/
-    //                                  Cart Data Updater 
-    /******************************************************************************************/
-    cartUpdate($target) {
-        var utils = stencilUtils;
-        var itemId = $target.data('cartItemid');
-        var $el = $(`#qty-${itemId}`);
-        var oldQty = parseInt($el.val(), 10);
-        var maxQty = parseInt($el.data('quantityMax'), 10);
-        var minQty = parseInt($el.data('quantityMin'), 10);
-        var minError = $el.data('quantityMinError');
-        var maxError = $el.data('quantityMaxError');
-        var newQty = $target.data('action') === 'inc' ? oldQty + 1 : oldQty - 1;
-        window['$overlay'] = window.$('[data-cart] .loadingOverlay');
-
-
-        // Does not quality for min/max quantity
-        if (newQty < minQty) {
-            return swal.fire({
-                text: minError,
-                icon: 'error',
-            });
-        } else if (maxQty > 0 && newQty > maxQty) {
-            return swal.fire({
-                text: maxError,
-                icon: 'error',
-            });
-        }
-
-        $overlay.show();
-
-        utils.api.cart.itemUpdate(itemId, newQty, (err, response) => {
-            $overlay.hide();
-            if (response.data.status === 'succeed') {
-                if (utils.tools.storage.localStorageAvailable()) { // if the quantity is changed "1" from "0", we have to remove the row.
-                    let remove = (newQty === 0);
-                    let quantity = Number(localStorage['cart-quantity']) + (newQty - oldQty);
-                    $('.cart-quantity')
-                        .text(quantity)
-                        .toggleClass('countPill--positive', newQty > 0);
-                    localStorage.setItem('cart-quantity', quantity);
-                    refreshContent(remove);
-                } else {
-                    let remove = (newQty === 0);
-                    let quantity = window.cartQty + (newQty - oldQty);
-                    $('.cart-quantity')
-                        .text(quantity)
-                        .toggleClass('countPill--positive', newQty > 0);
-                    localStorage.setItem('cart-quantity', quantity);
-                    refreshContent(remove);
-                }
-            } else {
-                $el.val(oldQty);
-                swal.fire({
-                    text: response.data.errors.join('\n'),
-                    icon: 'error',
-                });
-            }
-        });
-    }
-
-
-    /******************************************************************************************/
-    //                                  Bind Cart Events 
-    /******************************************************************************************/
-    bindCartEvents() {
-        $cartBinder.trigger('click');
-        // let preVal;
-        // this.$cartContent = window.$('[data-cart-content]');
-        // // cart update
-        // $('[data-cart-update]', $cartContent).on('click', event => {
-        //     var $target = $(event.currentTarget);
-
-        //     event.preventDefault();
-
-        //     // update cart quantity
-        //     cartUpdate($target);
-        // });
-
-        // // cart qty manually updates
-        // $('.cart-item-qty-input', $cartContent).on('focus', function onQtyFocus() {
-        //     preVal = this.value;
-        // }).change(event => {
-        //     var $target = $(event.currentTarget);
-        //     event.preventDefault();
-
-        //     // update cart quantity
-        //     cartUpdateQtyTextChange($target, preVal);
-        // });
-
-        // $('.cart-remove', $cartContent).on('click', event => {
-        //     var itemId = $(event.currentTarget).data('cartItemid');
-        //     var string = $(event.currentTarget).data('confirmDelete');
-        //     swal.fire({
-        //         text: string,
-        //         icon: 'warning',
-        //         showCancelButton: true,
-        //     }).then((result) => {
-        //         if (result.value) {
-        //             // remove item from cart
-        //             cartRemoveItem(itemId);
-        //         }
-        //     });
-        //     event.preventDefault();
-        // });
-
-        console.log('Cart Events Bound');
-    }
-
     
     /******************************************************************************************/
     //                        FETCH API SAMPLE OUTPUTEXPAMPLE
@@ -557,6 +383,9 @@ export default class Custom_Cart {
 
     /******************************************************************/
     refreshContent(remove, cartQTY) {    
+        window.$cartContent = $('[data-cart-content]');
+        window.$cartMessages = $('[data-cart-status]');
+        window.$cartTotals = $('[data-cart-totals]');
         const utils = stencilUtils;
         window['addCartQty'] = 0;
         window['$cartContent'] = window.$('[data-cart-content]');
@@ -594,7 +423,7 @@ export default class Custom_Cart {
                 return Promise.resolve(true);
               })
             .then((response)=>{
-            return Promise.resolve(response ? (bindCartEvents(),window.$overlay.hide(), true) : (console.log('fail at response1'), false));
+            return Promise.resolve(response ? ($('[data-cart-binder]').click(),window.$overlay.hide(), true) : (console.log('fail at response1'), false));
             })
             .then((response2)=>{
                 return Promise.resolve(response2 ? (cartQTY ? cartQTY : returnCartQty()) : (console.log('fail at response2'), false));     
@@ -605,9 +434,8 @@ export default class Custom_Cart {
                 console.log('Cart Content Refresh Success');
             });
         });
-        return 'Cart Content Refresh Initialized';
     }
-
+    
      /****************************************************************
 
         Return Cart Quantity Using API or Local Storage
@@ -683,14 +511,7 @@ export default class Custom_Cart {
     execascade() {
         const secureBaseUrl = location.origin;
         const utils = stencilUtils;
-        
-        /* var cartCheck = fetch('/api/storefront/carts/', 
-            {credentials: 'include'})
-            .then(response => response.json())
-            .then(function(){return true;})
-            .catch(function(){return false;}); */
 
-        //if (Promise.resolve(cartCheck)) {
         if (typeof addCartQty !== 'undefined' && (addCartQty > 0)) {
             let remove = (addCartQty === 0);
             $('.cart-quantity').text(addCartQty).toggleClass('countPill--positive', addCartQty > 0);

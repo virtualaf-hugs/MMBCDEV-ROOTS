@@ -14,6 +14,14 @@ export default class Cart extends PageManager {
         this.$overlay = $('[data-cart] .loadingOverlay')
             .hide(); // TODO: temporary until roper pulls in his cart components
         this.bindEvents();
+        
+        const bindEvents = _.bind(_.debounce(this.bindEvents, 400), this);
+
+        $('body').on('click', '[data-cart-binder]', event => {
+            event.preventDefault();
+            bindEvents();
+        });
+
     }
 
     cartUpdate($target) {
@@ -192,15 +200,23 @@ export default class Cart extends PageManager {
         if (remove && $cartItemsRows.length === 1) {
             return window.location.reload();
         }
-
+        
         utils.api.cart.getContent(options, (err, response) => {
-            this.$cartContent.html(response.content);
-            this.$cartTotals.html(response.totals);
-            this.$cartMessages.html(response.statusMessages);
-
-            $cartPageTitle.replaceWith(response.pageTitle);
-            this.bindEvents();
             this.$overlay.hide();
+            if (response) {
+                this.$cartContent.html(response.content);
+                this.$cartTotals.html(response.totals);
+                this.$cartMessages.html(response.statusMessages);
+                $cartPageTitle.replaceWith(response.pageTitle);
+                this.bindEvents();
+            } else {
+                swal.fire({
+                    text: response.data.errors.join('\n'),
+                    icon: 'error',
+                });
+            }
+            
+            
 
             const quantity = $('[data-cart-quantity]', this.$cartContent).data('cartQuantity') || 0;
 
@@ -215,6 +231,7 @@ export default class Cart extends PageManager {
         const cartRemoveItem = _.bind(_.debounce(this.cartRemoveItem, debounceTimeout), this);
         let preVal;
 
+
         // cart update
         $('[data-cart-update]', this.$cartContent).on('click', event => {
             const $target = $(event.currentTarget);
@@ -225,12 +242,7 @@ export default class Cart extends PageManager {
             cartUpdate($target);
         });
 
-         // cart update
-         $('[data-cart-binder]').on('click', event => {
-            event.preventDefault();
-            this.bindEvents();
-        });
-        
+
         // cart qty manually updates
         $('.cart-item-qty-input', this.$cartContent).on('focus', function onQtyFocus() {
             preVal = this.value;
