@@ -14,13 +14,14 @@ export default class Cart extends PageManager {
         this.$overlay = $('[data-cart] .loadingOverlay')
             .hide(); // TODO: temporary until roper pulls in his cart components
         this.bindEvents();
-
+        
         const bindEvents = _.bind(_.debounce(this.bindEvents, 400), this);
 
         $('body').on('click', '[data-cart-binder]', event => {
             event.preventDefault();
             bindEvents();
         });
+
     }
 
     cartUpdate($target) {
@@ -214,6 +215,8 @@ export default class Cart extends PageManager {
                     icon: 'error',
                 });
             }
+            
+            
 
             const quantity = $('[data-cart-quantity]', this.$cartContent).data('cartQuantity') || 0;
 
@@ -227,6 +230,7 @@ export default class Cart extends PageManager {
         const cartUpdateQtyTextChange = _.bind(_.debounce(this.cartUpdateQtyTextChange, debounceTimeout), this);
         const cartRemoveItem = _.bind(_.debounce(this.cartRemoveItem, debounceTimeout), this);
         let preVal;
+
 
         // cart update
         $('[data-cart-update]', this.$cartContent).on('click', event => {
